@@ -269,6 +269,16 @@ const css = `
   .btn-primary:hover { opacity: 0.85; }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
   .msg-err {
+    margin-top: 12px; padding: 9px 12px;
+    background: #fef2f2; border: 1px solid #fecaca;
+    border-radius: 7px; font-size: 13px; color: #dc2626;
+  }
+  .msg-ok {
+    margin-top: 12px; padding: 9px 12px;
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 7px; font-size: 13px; color: #16a34a;
+  }
+  .msg-err {
     margin-top: 12px;
     padding: 9px 12px;
     background: var(--red-bg);
@@ -749,17 +759,68 @@ function AuthScreen({ onLogin }) {
   );
 }
 
+// ── Password Gate ─────────────────────────────────────────────────────────────
+const SITE_PASSWORD = "Xystic@2026";
+
+function PasswordGate({ onPass }) {
+  const [val, setVal] = useState("");
+  const [err, setErr] = useState(false);
+
+  const check = () => {
+    if (val === SITE_PASSWORD) { onPass(); }
+    else { setErr(true); setVal(""); setTimeout(() => setErr(false), 2000); }
+  };
+
+  return (
+    <>
+      <style>{css}</style>
+      <div className="auth-page">
+        <div className="auth-card">
+          <div className="auth-brand">
+            <MerchSpyLogo size={30} />
+            <span className="auth-brand-name">MerchSpy <span>AI</span></span>
+          </div>
+          <div className="auth-heading" style={{fontSize:18}}>Enter Access Password</div>
+          <div className="field" style={{marginTop:8}}>
+            <label>Password</label>
+            <input
+              type="password"
+              placeholder="••••••••••"
+              value={val}
+              onChange={e => setVal(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && check()}
+              autoFocus
+            />
+          </div>
+          <button className="btn-primary" onClick={check}>Continue</button>
+          {err && <div className="msg-err">Incorrect password. Try again.</div>}
+          <div className="auth-foot">
+            By <strong>Reza</strong> · ThinkSys IT ·{" "}
+            <a href="https://t.me/Xystic" target="_blank" rel="noreferrer">TG: Xystic</a>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function App() {
+  const [passed, setPassed] = useState(() => sessionStorage.getItem("ms_pass") === "1");
   const [user, setUser] = useState(null);
+
   useEffect(() => {
     try { const s = sessionStorage.getItem("ms_user"); if (s) setUser(JSON.parse(s)); } catch (_) {}
   }, []);
+
+  const handlePass = () => { sessionStorage.setItem("ms_pass", "1"); setPassed(true); };
   const login = (u) => { setUser(u); sessionStorage.setItem("ms_user", JSON.stringify(u)); };
   const logout = async () => {
     if (user?.token) await sb.signOut(user.token).catch(() => {});
     setUser(null); sessionStorage.removeItem("ms_user");
   };
+
+  if (!passed) return <PasswordGate onPass={handlePass} />;
   if (!user) return <AuthScreen onLogin={login} />;
   return <Dashboard user={user} onLogout={logout} />;
 }
