@@ -1,56 +1,48 @@
 import { useState, useEffect } from "react";
 
-// ── Supabase config ───────────────────────────────────────────────────────────
-const SUPABASE_URL = "https://jigtnygqlnwigpdmbrmu.supabase.co";
-const SUPABASE_ANON_KEY = "sb_publishable_ynTEm8UCqIV033FvAEHTtw_IgjSqZ3z";
-
-const sb = {
-  async signUp(email, password) {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password }),
-    });
-    return r.json();
-  },
-  async signIn(email, password) {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password }),
-    });
-    return r.json();
-  },
-  async signOut(token) {
-    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
-    });
-  },
-};
+// ── Password ──────────────────────────────────────────────────────────────────
+const SITE_PASSWORD = "Xystic@2026";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const AMAZON_POOL = [
-  { title: "Funny Cat Mom Shirt Women", bsr: 3214, price: 21.99, reviews: 42, rating: 4.7 },
-  { title: "Cat Mama Tee Cute Kitten Lover", bsr: 8321, price: 19.99, reviews: 17, rating: 4.5 },
-  { title: "Best Cat Mom Ever Graphic Tee", bsr: 14500, price: 24.99, reviews: 88, rating: 4.8 },
-  { title: "Fur Mama Cat Lover Gift Shirt", bsr: 22400, price: 18.99, reviews: 11, rating: 4.3 },
-  { title: "Crazy Cat Lady Club Tshirt", bsr: 31000, price: 22.99, reviews: 203, rating: 4.6 },
-  { title: "Cat Mom Life Heather Grey Tee", bsr: 44200, price: 19.99, reviews: 7, rating: 4.4 },
-  { title: "Meow Cat Mom Floral Design Shirt", bsr: 67800, price: 25.99, reviews: 56, rating: 4.5 },
-  { title: "Im a Cat Mom Premium Unisex", bsr: 82000, price: 29.99, reviews: 134, rating: 4.7 },
-  { title: "Cat Mom Squad Bella Canvas Tee", bsr: 95000, price: 23.99, reviews: 29, rating: 4.2 },
-  { title: "Proud Cat Mom Vintage Wash Shirt", bsr: 120000, price: 21.99, reviews: 4, rating: 4.6 },
+const AMAZON_TEMPLATES = [
+  { template: "{kw} Funny Tee Women Gift", bsr: 3214, price: 21.99, reviews: 42, rating: 4.7 },
+  { template: "{kw} Tee Cute Lover Gift", bsr: 8321, price: 19.99, reviews: 17, rating: 4.5 },
+  { template: "Best {kw} Ever Graphic Tee", bsr: 14500, price: 24.99, reviews: 88, rating: 4.8 },
+  { template: "{kw} Gift Shirt Women", bsr: 22400, price: 18.99, reviews: 11, rating: 4.3 },
+  { template: "Crazy {kw} Club Tshirt", bsr: 31000, price: 22.99, reviews: 203, rating: 4.6 },
+  { template: "{kw} Life Heather Grey Tee", bsr: 44200, price: 19.99, reviews: 7, rating: 4.4 },
+  { template: "{kw} Floral Design Shirt", bsr: 67800, price: 25.99, reviews: 56, rating: 4.5 },
+  { template: "I am a {kw} Premium Unisex Tee", bsr: 82000, price: 29.99, reviews: 134, rating: 4.7 },
+  { template: "{kw} Squad Bella Canvas Tee", bsr: 95000, price: 23.99, reviews: 29, rating: 4.2 },
+  { template: "Proud {kw} Vintage Wash Shirt", bsr: 120000, price: 21.99, reviews: 4, rating: 4.6 },
+  { template: "{kw} Coffee Mug Funny Gift 11oz", bsr: 12400, price: 15.99, reviews: 67, rating: 4.6 },
+  { template: "Best {kw} Ever Ceramic Mug", bsr: 28700, price: 17.99, reviews: 23, rating: 4.4 },
+  { template: "{kw} Life Mug Gift for Her", bsr: 51000, price: 14.99, reviews: 9, rating: 4.5 },
+  { template: "{kw} All Over Print Hoodie", bsr: 38500, price: 45.99, reviews: 31, rating: 4.3 },
+  { template: "{kw} All Over Print Tote Bag", bsr: 62000, price: 22.99, reviews: 14, rating: 4.4 },
+  { template: "{kw} Pattern Leggings Women", bsr: 74000, price: 34.99, reviews: 88, rating: 4.6 },
+  { template: "{kw} Pattern Hawaiian Shirt", bsr: 89000, price: 39.99, reviews: 19, rating: 4.2 },
+  { template: "{kw} Sublimation Tumbler 20oz", bsr: 43000, price: 27.99, reviews: 52, rating: 4.7 },
+  { template: "{kw} Sweatshirt Crewneck Gift", bsr: 56000, price: 34.99, reviews: 38, rating: 4.5 },
+  { template: "{kw} Phone Case Cute Gift", bsr: 91000, price: 12.99, reviews: 6, rating: 4.3 },
 ];
-const ETSY_POOL = [
-  { title: "Cat Mom SVG Bundle Cut Files", shopSales: 213, reviews: 35, favorites: 102, price: 3.50, listingAge: "2 months" },
-  { title: "Personalized Cat Lover Tee Print", shopSales: 91, reviews: 12, favorites: 31, price: 18.00, listingAge: "3 weeks" },
-  { title: "Cat Mom Mug Custom Gift", shopSales: 445, reviews: 67, favorites: 210, price: 14.99, listingAge: "5 months" },
-  { title: "Fur Mama Sublimation Design PNG", shopSales: 38, reviews: 5, favorites: 44, price: 2.99, listingAge: "1 month" },
-  { title: "Cat Mom Embroidery Pattern", shopSales: 127, reviews: 22, favorites: 89, price: 5.50, listingAge: "4 months" },
-  { title: "Crazy Cat Lady Printable Wall Art", shopSales: 59, reviews: 9, favorites: 33, price: 4.00, listingAge: "6 weeks" },
-  { title: "Cat Mama Hoodie Digital File", shopSales: 180, reviews: 41, favorites: 155, price: 6.00, listingAge: "3 months" },
-  { title: "Meow Cat Mom Watercolor Clipart", shopSales: 22, reviews: 3, favorites: 17, price: 3.00, listingAge: "2 weeks" },
+const ETSY_TEMPLATES = [
+  { template: "{kw} SVG Bundle Cut Files", shopSales: 213, reviews: 35, favorites: 102, price: 3.50, listingAge: "2 months" },
+  { template: "Personalized {kw} Tee Print", shopSales: 91, reviews: 12, favorites: 31, price: 18.00, listingAge: "3 weeks" },
+  { template: "{kw} Mug Custom Gift", shopSales: 445, reviews: 67, favorites: 210, price: 14.99, listingAge: "5 months" },
+  { template: "{kw} Sublimation Design PNG", shopSales: 38, reviews: 5, favorites: 44, price: 2.99, listingAge: "1 month" },
+  { template: "{kw} Embroidery Pattern", shopSales: 127, reviews: 22, favorites: 89, price: 5.50, listingAge: "4 months" },
+  { template: "{kw} Printable Wall Art", shopSales: 59, reviews: 9, favorites: 33, price: 4.00, listingAge: "6 weeks" },
+  { template: "{kw} Hoodie Digital File", shopSales: 180, reviews: 41, favorites: 155, price: 6.00, listingAge: "3 months" },
+  { template: "{kw} Watercolor Clipart PNG", shopSales: 22, reviews: 3, favorites: 17, price: 3.00, listingAge: "2 weeks" },
+  { template: "{kw} All Over Print Leggings", shopSales: 310, reviews: 54, favorites: 188, price: 8.50, listingAge: "6 months" },
+  { template: "{kw} Pattern Seamless PNG", shopSales: 74, reviews: 8, favorites: 39, price: 2.50, listingAge: "5 weeks" },
+  { template: "{kw} Mug Wrap Sublimation", shopSales: 289, reviews: 44, favorites: 132, price: 3.00, listingAge: "4 months" },
+  { template: "{kw} Tumbler Wrap 20oz PNG", shopSales: 156, reviews: 27, favorites: 91, price: 3.50, listingAge: "3 months" },
+  { template: "{kw} All Over Print Hoodie Design", shopSales: 43, reviews: 6, favorites: 28, price: 5.00, listingAge: "6 weeks" },
+  { template: "{kw} Phone Case Template", shopSales: 88, reviews: 11, favorites: 47, price: 4.00, listingAge: "2 months" },
+  { template: "{kw} Tote Bag PNG Design", shopSales: 167, reviews: 31, favorites: 79, price: 2.99, listingAge: "3 months" },
+  { template: "{kw} Sweatshirt PNG Sublimation", shopSales: 201, reviews: 38, favorites: 114, price: 4.50, listingAge: "5 months" },
 ];
 const TRENDING_PHRASES = {
   "cat mom": ["Cat Mom", "Fur Mama", "Cat Lover", "Crazy Cat Lady", "Meow Mama", "Cat Lady Club"],
@@ -66,20 +58,28 @@ function getPhrases(kw) {
   return [`${kw} Life`, `Best ${kw}`, `${kw} Vibes`, `${kw} Squad`, `Proud ${kw}`, `${kw} Club`];
 }
 function genAmazon(keyword) {
-  return AMAZON_POOL.map((item, i) => ({
-    ...item,
-    title: i === 0 ? `${keyword} Funny Tee Women Gift` : item.title.replace(/cat mom/i, keyword),
-    url: `https://amazon.com/dp/B0${Math.random().toString(36).substr(2,8).toUpperCase()}`,
-    id: i,
-  }));
+  const kw = keyword.trim();
+  return AMAZON_TEMPLATES.map((item, i) => {
+    const title = item.template.replace("{kw}", kw);
+    return {
+      ...item,
+      title,
+      url: `https://www.amazon.com/s?k=${encodeURIComponent(title)}`,
+      id: i,
+    };
+  });
 }
 function genEtsy(keyword) {
-  return ETSY_POOL.map((item, i) => ({
-    ...item,
-    title: item.title.replace(/cat mom/i, keyword),
-    url: `https://etsy.com/listing/${Math.floor(Math.random()*9e8+1e8)}`,
-    id: i,
-  }));
+  const kw = keyword.trim();
+  return ETSY_TEMPLATES.map((item, i) => {
+    const title = item.template.replace("{kw}", kw);
+    return {
+      ...item,
+      title,
+      url: `https://www.etsy.com/search?q=${encodeURIComponent(title)}`,
+      id: i,
+    };
+  });
 }
 function bsrClass(bsr) {
   if (bsr < 10000) return "hot";
@@ -243,6 +243,16 @@ const css = `
   .btn-primary:hover { opacity: 0.85; }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
   .msg-err {
+    margin-top: 12px; padding: 9px 12px;
+    background: #fef2f2; border: 1px solid #fecaca;
+    border-radius: 7px; font-size: 13px; color: #dc2626;
+  }
+  .msg-ok {
+    margin-top: 12px; padding: 9px 12px;
+    background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 7px; font-size: 13px; color: #16a34a;
+  }
+  .msg-err {
     margin-top: 12px;
     padding: 9px 12px;
     background: var(--red-bg);
@@ -275,7 +285,7 @@ const css = `
   .topbar {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
     margin-bottom: 36px;
     padding-bottom: 20px;
     border-bottom: 1px solid var(--border);
@@ -301,14 +311,28 @@ const css = `
   .user-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     font-size: 13px;
+  }
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--text);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+    letter-spacing: 0;
   }
   .user-email {
     color: var(--sub);
     font-family: 'Geist Mono', monospace;
     font-size: 12px;
-    max-width: 180px;
+    max-width: 160px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -442,6 +466,7 @@ const css = `
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-family: 'Geist Mono', monospace;
+    white-space: nowrap;
   }
   td {
     padding: 11px 14px;
@@ -469,6 +494,7 @@ const css = `
     color: var(--blue);
     text-decoration: none;
     font-family: 'Geist Mono', monospace;
+    white-space: nowrap;
   }
   .link:hover { text-decoration: underline; }
   .table-foot {
@@ -633,35 +659,17 @@ function MerchSpyLogo({ size = 28 }) {
   );
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
-function AuthScreen({ onLogin }) {
-  const [mode, setMode] = useState("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const [ok, setOk] = useState("");
+// ── Password Gate ─────────────────────────────────────────────────────────────
+const SITE_PASSWORD = "Xystic@2026";
 
-  const submit = async () => {
-    setErr(""); setOk("");
-    if (!email || !password) { setErr("Please enter your email and password."); return; }
-    if (password.length < 6) { setErr("Password must be at least 6 characters."); return; }
-    setBusy(true);
-    try {
-      if (mode === "signup") {
-        const d = await sb.signUp(email, password);
-        if (d.error) setErr(d.error.message || "Sign up failed.");
-        else { setOk("Account created! Please verify your email then log in."); setMode("login"); }
-      } else {
-        const d = await sb.signIn(email, password);
-        if (d.error) setErr(d.error.message || "Invalid email or password.");
-        else if (d.access_token) onLogin({ token: d.access_token, email: d.user?.email });
-      }
-    } catch (e) { setErr("Connection error. Check your Supabase config."); }
-    setBusy(false);
+function PasswordGate({ onPass }) {
+  const [val, setVal] = useState("");
+  const [err, setErr] = useState(false);
+
+  const check = () => {
+    if (val === SITE_PASSWORD) { onPass(); }
+    else { setErr(true); setVal(""); setTimeout(() => setErr(false), 2000); }
   };
-
-  const sw = (m) => { setMode(m); setErr(""); setOk(""); };
 
   return (
     <>
@@ -672,31 +680,20 @@ function AuthScreen({ onLogin }) {
             <MerchSpyLogo size={30} />
             <span className="auth-brand-name">MerchSpy <span>AI</span></span>
           </div>
-          <div className="auth-heading">{mode === "login" ? "Sign in" : "Create account"}</div>
-
-          <div className="auth-toggle">
-            <button className={`auth-toggle-btn ${mode==="login"?"on":""}`} onClick={()=>sw("login")}>Login</button>
-            <button className={`auth-toggle-btn ${mode==="signup"?"on":""}`} onClick={()=>sw("signup")}>Sign Up</button>
-          </div>
-
-          <div className="field">
-            <label>Email</label>
-            <input type="email" placeholder="you@example.com" value={email}
-              onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} />
-          </div>
-          <div className="field">
+          <div className="auth-heading" style={{fontSize:18}}>Enter Access Password</div>
+          <div className="field" style={{marginTop:8}}>
             <label>Password</label>
-            <input type="password" placeholder="Min. 6 characters" value={password}
-              onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} />
+            <input
+              type="password"
+              placeholder="••••••••••"
+              value={val}
+              onChange={e => setVal(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && check()}
+              autoFocus
+            />
           </div>
-
-          <button className="btn-primary" onClick={submit} disabled={busy}>
-            {busy ? "Please wait…" : mode==="login" ? "Login" : "Create account"}
-          </button>
-
-          {err && <div className="msg-err">{err}</div>}
-          {ok && <div className="msg-ok">{ok}</div>}
-
+          <button className="btn-primary" onClick={check}>Continue</button>
+          {err && <div className="msg-err">Incorrect password. Try again.</div>}
           <div className="auth-foot">
             By <strong>Reza</strong> · ThinkSys IT ·{" "}
             <a href="https://t.me/Xystic" target="_blank" rel="noreferrer">TG: Xystic</a>
@@ -709,21 +706,14 @@ function AuthScreen({ onLogin }) {
 
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function App() {
-  const [user, setUser] = useState(null);
-  useEffect(() => {
-    try { const s = sessionStorage.getItem("ms_user"); if (s) setUser(JSON.parse(s)); } catch (_) {}
-  }, []);
-  const login = (u) => { setUser(u); sessionStorage.setItem("ms_user", JSON.stringify(u)); };
-  const logout = async () => {
-    if (user?.token) await sb.signOut(user.token).catch(() => {});
-    setUser(null); sessionStorage.removeItem("ms_user");
-  };
-  if (!user) return <AuthScreen onLogin={login} />;
-  return <Dashboard user={user} onLogout={logout} />;
+  const [passed, setPassed] = useState(() => sessionStorage.getItem("ms_pass") === "1");
+  const handlePass = () => { sessionStorage.setItem("ms_pass", "1"); setPassed(true); };
+  if (!passed) return <PasswordGate onPass={handlePass} />;
+  return <Dashboard />;
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
-function Dashboard({ user, onLogout }) {
+function Dashboard() {
   const [kw, setKw] = useState("Cat Mom");
   const [tab, setTab] = useState("overview");
   const [ready, setReady] = useState(false);
@@ -785,15 +775,6 @@ function Dashboard({ user, onLogout }) {
               <div className="brand-name">MerchSpy <span>AI</span></div>
               <div className="brand-tag">Amazon · Etsy · AI Research</div>
             </div>
-          </div>
-          <div className="user-info">
-            <span className="user-email">{user.email}</span>
-            <span className="divider-dot">·</span>
-            <button className="btn-ghost" onClick={onLogout}>Sign out</button>
-          </div>
-          <div className="credit">
-            <span className="credit-name">Reza</span>
-            <span className="credit-line">ThinkSys IT · <a href="https://t.me/Xystic" target="_blank" rel="noreferrer">TG: Xystic</a></span>
           </div>
         </div>
 
@@ -883,7 +864,7 @@ function Dashboard({ user, onLogout }) {
                         ))}
                     </tbody>
                   </table>
-                  <div className="table-foot">{filtered.length} of {amazon.length} listings · Demo data</div>
+                <div className="table-foot">{filtered.length} of {amazon.length} listings</div>
                 </div>
               </>
             )}
@@ -907,7 +888,7 @@ function Dashboard({ user, onLogout }) {
                     ))}
                   </tbody>
                 </table>
-                <div className="table-foot">Green = low competition · Demo data</div>
+                <div className="table-foot">Green = low competition</div>
               </div>
             )}
 
@@ -979,6 +960,12 @@ function Dashboard({ user, onLogout }) {
             <div className="empty-t">Fetching data…</div>
           </div>
         )}
+
+        {/* Footer */}
+        <div style={{textAlign:"center", marginTop:48, paddingTop:20, borderTop:"1px solid var(--border)", fontSize:12, color:"var(--muted)", fontFamily:"'Geist Mono', monospace"}}>
+          Made by <strong style={{color:"var(--sub)"}}>Reza</strong> · ThinkSys IT ·{" "}
+          <a href="https://t.me/Xystic" target="_blank" rel="noreferrer" style={{color:"var(--sub)", textDecoration:"none"}}>TG: Xystic</a>
+        </div>
       </div>
     </>
   );
