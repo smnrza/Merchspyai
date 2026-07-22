@@ -1,33 +1,7 @@
 import { useState, useEffect } from "react";
 
-// ── Supabase config ───────────────────────────────────────────────────────────
-const SUPABASE_URL = "https://jigtnygqlnwigpdmbrmu.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImppZ3RueWdxbG53aWdwZG1icm11Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3MDEwMzIsImV4cCI6MjA5NjI3NzAzMn0.VnS88Bumt3tTwOJJpoBaiREl7orTZRK7NV-wojTSNHE";
-
-const sb = {
-  async signUp(email, password) {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/signup`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password }),
-    });
-    return r.json();
-  },
-  async signIn(email, password) {
-    const r = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
-      body: JSON.stringify({ email, password }),
-    });
-    return r.json();
-  },
-  async signOut(token) {
-    await fetch(`${SUPABASE_URL}/auth/v1/logout`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${token}` },
-    });
-  },
-};
+// ── Password ──────────────────────────────────────────────────────────────────
+const SITE_PASSWORD = "Xystic@2026";
 
 // ── Data ──────────────────────────────────────────────────────────────────────
 const AMAZON_TEMPLATES = [
@@ -685,80 +659,6 @@ function MerchSpyLogo({ size = 28 }) {
   );
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
-function AuthScreen({ onLogin }) {
-  const [mode, setMode] = useState("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState("");
-  const [ok, setOk] = useState("");
-
-  const submit = async () => {
-    setErr(""); setOk("");
-    if (!email || !password) { setErr("Please enter your email and password."); return; }
-    if (password.length < 6) { setErr("Password must be at least 6 characters."); return; }
-    setBusy(true);
-    try {
-      if (mode === "signup") {
-        const d = await sb.signUp(email, password);
-        if (d.error) setErr(d.error.message || "Sign up failed.");
-        else { setOk("Account created! Please verify your email then log in."); setMode("login"); }
-      } else {
-        const d = await sb.signIn(email, password);
-        if (d.error) setErr(d.error.message || "Invalid email or password.");
-        else if (d.access_token) onLogin({ token: d.access_token, email: d.user?.email });
-      }
-    } catch (e) { setErr("Connection error. Check your Supabase config."); }
-    setBusy(false);
-  };
-
-  const sw = (m) => { setMode(m); setErr(""); setOk(""); };
-
-  return (
-    <>
-      <style>{css}</style>
-      <div className="auth-page">
-        <div className="auth-card">
-          <div className="auth-brand">
-            <MerchSpyLogo size={30} />
-            <span className="auth-brand-name">MerchSpy <span>AI</span></span>
-          </div>
-          <div className="auth-heading">{mode === "login" ? "Sign in" : "Create account"}</div>
-
-          <div className="auth-toggle">
-            <button className={`auth-toggle-btn ${mode==="login"?"on":""}`} onClick={()=>sw("login")}>Login</button>
-            <button className={`auth-toggle-btn ${mode==="signup"?"on":""}`} onClick={()=>sw("signup")}>Sign Up</button>
-          </div>
-
-          <div className="field">
-            <label>Email</label>
-            <input type="email" placeholder="you@example.com" value={email}
-              onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} />
-          </div>
-          <div className="field">
-            <label>Password</label>
-            <input type="password" placeholder="Min. 6 characters" value={password}
-              onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==="Enter"&&submit()} />
-          </div>
-
-          <button className="btn-primary" onClick={submit} disabled={busy}>
-            {busy ? "Please wait…" : mode==="login" ? "Login" : "Create account"}
-          </button>
-
-          {err && <div className="msg-err">{err}</div>}
-          {ok && <div className="msg-ok">{ok}</div>}
-
-          <div className="auth-foot">
-            By <strong>Reza</strong> · ThinkSys IT ·{" "}
-            <a href="https://t.me/Xystic" target="_blank" rel="noreferrer">TG: Xystic</a>
-          </div>
-        </div>
-      </div>
-    </>
-  );
-}
-
 // ── Password Gate ─────────────────────────────────────────────────────────────
 const SITE_PASSWORD = "Xystic@2026";
 
@@ -807,26 +707,13 @@ function PasswordGate({ onPass }) {
 // ── Root ──────────────────────────────────────────────────────────────────────
 export default function App() {
   const [passed, setPassed] = useState(() => sessionStorage.getItem("ms_pass") === "1");
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    try { const s = sessionStorage.getItem("ms_user"); if (s) setUser(JSON.parse(s)); } catch (_) {}
-  }, []);
-
   const handlePass = () => { sessionStorage.setItem("ms_pass", "1"); setPassed(true); };
-  const login = (u) => { setUser(u); sessionStorage.setItem("ms_user", JSON.stringify(u)); };
-  const logout = async () => {
-    if (user?.token) await sb.signOut(user.token).catch(() => {});
-    setUser(null); sessionStorage.removeItem("ms_user");
-  };
-
   if (!passed) return <PasswordGate onPass={handlePass} />;
-  if (!user) return <AuthScreen onLogin={login} />;
-  return <Dashboard user={user} onLogout={logout} />;
+  return <Dashboard />;
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
-function Dashboard({ user, onLogout }) {
+function Dashboard() {
   const [kw, setKw] = useState("Cat Mom");
   const [tab, setTab] = useState("overview");
   const [ready, setReady] = useState(false);
@@ -888,14 +775,6 @@ function Dashboard({ user, onLogout }) {
               <div className="brand-name">MerchSpy <span>AI</span></div>
               <div className="brand-tag">Amazon · Etsy · AI Research</div>
             </div>
-          </div>
-          <div className="user-info">
-            <div className="user-avatar">
-              {user.email ? user.email[0].toUpperCase() : "U"}
-            </div>
-            <span className="user-email">{user.email}</span>
-            <span className="divider-dot">·</span>
-            <button className="btn-ghost" onClick={onLogout}>Sign out</button>
           </div>
         </div>
 
