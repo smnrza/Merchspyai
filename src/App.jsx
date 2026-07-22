@@ -1,8 +1,5 @@
 import { useState, useEffect } from "react";
 
-// ── Password ──────────────────────────────────────────────────────────────────
-const SITE_PASSWORD = "Xystic@2026";
-
 // ── Data ──────────────────────────────────────────────────────────────────────
 const AMAZON_TEMPLATES = [
   { template: "{kw} Funny Tee Women Gift", bsr: 3214, price: 21.99, reviews: 42, rating: 4.7 },
